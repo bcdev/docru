@@ -1,0 +1,66 @@
+[build-system]
+requires = [
+  "setuptools >= 77.0.3",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "docru"
+dynamic = ["version"]
+authors = [
+  {name = "Pontus Lurcock", email = "pontus.lurcock@brockmann-consult.de"}
+]
+description = """\
+  Log docker container resource usage
+  """
+keywords = [
+  "container"
+]
+readme = {file = "README.md", content-type = "text/markdown"}
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Development Status :: 4 - Beta",
+]
+dependencies = [
+  "click",
+  "pint"
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "docru.__version__"}
+
+[tool.setuptools.packages.find]
+exclude = [
+  "test/*",
+  "doc/*",
+  "site/*",
+  "htmlcov/*"
+]
+
+[project.scripts]
+docru = "docru.docru:cli"
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "pytest-cov",
+  "black",
+  "flake8"
+]
+doc = [
+  "mkdocs",
+  "mkdocs-material",
+  "mkdocstrings",
+  "mkdocstrings-python"
+]
+
+[project.urls]
+Documentation = "https://github.com/bcdev/docru/blob/main/README.md"
+Issues = "https://github.com/bcdev/docru/issues"
+Changelog = "https://github.com/bcdev/docru/blob/main/CHANGES.md"
+Repository = "https://github.com/bcdev/docru"
+Homepage = "https://github.com/bcdev/docru"
