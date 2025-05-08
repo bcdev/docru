@@ -1,5 +1,6 @@
 import datetime
 import json
+import operator
 import pathlib
 import subprocess
 import time
@@ -17,7 +18,10 @@ def cli():
 @cli.command()
 def log():
     while True:
-        # print(datetime.datetime.now(datetime.UTC).strftime("%Y%m%dT%H%M%SZ"))
+        print(
+            datetime.datetime.now(datetime.UTC).strftime("%Y%m%dT%H%M%SZ"),
+            flush=True,
+        )
         subprocess.run(
             ["docker", "stats", "--no-stream", "--format", "json"],
         )
@@ -36,14 +40,20 @@ def log():
     "--container",
     help="Filter by this container name",
 )
-def parse(logfile: pathlib.Path, container: str):
+def parse(logfile: pathlib.Path, container: str | None) -> None:
+    res = []
     with open(logfile) as fh:
-        res = [
-            r
-            for line in fh.readlines()
-            if (r := Resources.parse_line(line)).name == container
-        ]
-
+        for line in fh.readlines():
+            if not line.startswith("{"):
+                # Ignore timestamps for now
+                continue
+            r = Resources.parse_line(line)
+            if container is None or r.name == container:
+                res.append(r)
+    print(
+        "Containers selected:",
+        " ".join(set(map(operator.attrgetter("name"), res))),
+    )
     print(f"Maximum memory: {max(r.mem for r in res):~P}")
     print(f"Maximum CPU: {max(r.cpu for r in res):~P}")
 
@@ -62,5 +72,5 @@ class Resources:
         cpu_quantity = cls.ur(data["CPUPerc"])
         assert cpu_quantity.u == cls.ur.percent
         mem_quantity = cls.ur(data["MemUsage"].split(" / ")[0])
-        mem_bytes = mem_quantity.to(pint.Unit("byte")).m
+        assert mem_quantity.u.is_compatible_with(cls.ur.byte)
         return Resources(name=data["Name"], cpu=cpu_quantity, mem=mem_quantity)
